@@ -30,6 +30,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// API Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
+
 // Welcome Route
 app.get('/', (req, res) => {
   res.json({
