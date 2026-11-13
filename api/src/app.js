@@ -31,11 +31,12 @@ app.get("/api/health", (req, res) => {
 });
 
 // API Routes
+// API Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/tasks", require("./routes/taskRoutes"));
-app.use("/api/tasks", require("./routes/taskRoutes"));
-
+app.use("/api/tasks/:id/assignees", require("./routes/assignmentRoutes"));
+app.use("/api/tasks/:id/shares", require("./routes/taskShareRoutes"));
 // Welcome Route
 app.get("/", (req, res) => {
   res.json({
