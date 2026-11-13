@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const notificationController = require("./controllers/notificationController");
+const authMiddleware = require("./middleware/authMiddleware");
 
 const app = express();
 
@@ -31,12 +33,23 @@ app.get("/api/health", (req, res) => {
 });
 
 // API Routes
-// API Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/tasks", require("./routes/taskRoutes"));
 app.use("/api/tasks/:id/assignees", require("./routes/assignmentRoutes"));
 app.use("/api/tasks/:id/shares", require("./routes/taskShareRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.get(
+  "/api/tasks/:id/email-logs",
+  authMiddleware,
+  notificationController.getTaskEmailLogs,
+);
+app.post(
+  "/api/email-logs/:id/retry",
+  authMiddleware,
+  notificationController.retryEmailLog,
+);
+
 // Welcome Route
 app.get("/", (req, res) => {
   res.json({
