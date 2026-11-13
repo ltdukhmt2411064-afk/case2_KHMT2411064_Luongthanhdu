@@ -17,6 +17,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _user;
   bool _isLoading = true;
   String? _errorMessage;
+  String? _failedAvatarUrl; // URL ảnh đã tải thất bại -> hiện chữ cái thay thế
+
+  // Chỉ coi là ảnh khi là URL http/https hợp lệ và chưa từng tải lỗi
+  bool _hasValidAvatar(User u) {
+    final url = u.avatarUrl.trim();
+    final uri = Uri.tryParse(url);
+    final isHttp = uri != null &&
+        uri.hasAuthority &&
+        (uri.scheme == 'http' || uri.scheme == 'https');
+    return isHttp && _failedAvatarUrl != u.avatarUrl;
+  }
 
   @override
   void initState() {
@@ -84,9 +95,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextFormField(
                     controller: avatarController,
                     decoration: const InputDecoration(
-                      labelText: 'URL Ảnh đại diện',
+                      labelText: 'URL Ảnh đại diện (để trống nếu không có)',
                       border: OutlineInputBorder(),
                     ),
+                    validator: (v) {
+                      final t = (v ?? '').trim();
+                      if (t.isEmpty) return null;
+                      final uri = Uri.tryParse(t);
+                      final ok = uri != null &&
+                          uri.hasAuthority &&
+                          (uri.scheme == 'http' || uri.scheme == 'https');
+                      return ok
+                          ? null
+                          : 'URL ảnh phải bắt đầu bằng http:// hoặc https://';
+                    },
                   ),
                 ],
               ),
@@ -108,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       try {
                         final updated = await _authService.updateMe(
                           fullName: nameController.text,
-                          avatarUrl: avatarController.text,
+                          avatarUrl: avatarController.text.trim(),
                         );
 
                         if (ctx.mounted) {
@@ -410,10 +432,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CircleAvatar(
                           radius: 50,
                           backgroundColor: Colors.blueAccent.shade100,
-                          backgroundImage: user.avatarUrl.isNotEmpty
-                              ? NetworkImage(user.avatarUrl)
+                          backgroundImage: _hasValidAvatar(user)
+                              ? NetworkImage(user.avatarUrl.trim())
                               : null,
-                          child: user.avatarUrl.isEmpty
+                          onBackgroundImageError: _hasValidAvatar(user)
+                              ? (_, __) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted && _failedAvatarUrl != user.avatarUrl) {
+                                      setState(() => _failedAvatarUrl = user.avatarUrl);
+                                    }
+                                  });
+                                }
+                              : null,
+                          child: !_hasValidAvatar(user)
                               ? Text(
                                   user.fullName.isNotEmpty
                                       ? user.fullName[0].toUpperCase()
