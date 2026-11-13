@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/tasks/task_list_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/profile/profile_screen.dart';
@@ -30,6 +31,7 @@ class TaskManagerApp extends StatelessWidget {
       home: const AuthGate(),
       routes: {
         '/login': (context) => const LoginScreen(),
+        '/tasks': (context) => const TaskListScreen(),
         '/register': (context) => const RegisterScreen(),
         '/profile': (context) => const ProfileScreen(),
       },
@@ -69,6 +71,6 @@ class _AuthGateState extends State<AuthGate> {
       );
     }
 
-    return _isLoggedIn! ? const ProfileScreen() : const LoginScreen();
+    return _isLoggedIn! ? const TaskListScreen() : const LoginScreen();
   }
 }
