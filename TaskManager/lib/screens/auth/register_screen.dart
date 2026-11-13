@@ -48,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (!mounted) return;
-
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Đăng ký thành công!'),
@@ -56,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
 
-      Navigator.pushReplacementNamed(context, '/profile');
+      Navigator.pushNamedAndRemoveUntil(context, '/profile', (route) => false);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
