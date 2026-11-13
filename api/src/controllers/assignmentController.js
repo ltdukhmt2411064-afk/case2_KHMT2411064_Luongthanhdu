@@ -1,6 +1,7 @@
 const Task = require("../models/Task");
 const User = require("../models/User");
 const { isValidId, getRoleAsync } = require("../utils/taskAccess");
+const { notifyAndEmail } = require("../services/notificationService");
 
 // GET /api/tasks/:id/assignees
 exports.getAssignees = async (req, res, next) => {
@@ -42,7 +43,6 @@ exports.getAssignees = async (req, res, next) => {
 };
 
 // POST /api/tasks/:id/assignees
-// Body: { userIds: ["..."], primaryAssigneeId?: "..." }
 exports.assignUsers = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -88,14 +88,12 @@ exports.assignUsers = async (req, res, next) => {
         });
     }
 
-    // Gộp danh sách cũ + mới, tránh trùng lặp
     const currentSet = new Set(
       (task.assigneeIds || []).map((uid) => String(uid)),
     );
     users.forEach((u) => currentSet.add(String(u._id)));
     task.assigneeIds = Array.from(currentSet);
 
-    // Cập nhật người phụ trách chính nếu có truyền lên và nằm trong danh sách được giao
     if (primaryAssigneeId && currentSet.has(String(primaryAssigneeId))) {
       task.primaryAssigneeId = primaryAssigneeId;
     } else if (!task.primaryAssigneeId && task.assigneeIds.length > 0) {
@@ -103,6 +101,20 @@ exports.assignUsers = async (req, res, next) => {
     }
 
     await task.save();
+
+    // TỰ ĐỘNG TẠO THÔNG BÁO & GỬI EMAIL CHO NGƯỜI ĐƯỢC GIAO VIỆC
+    for (const u of users) {
+      if (String(u._id) === String(req.user._id)) continue;
+      await notifyAndEmail({
+        userId: u._id,
+        taskId: task._id,
+        type: "task_assigned",
+        title: "Bạn được giao công việc mới",
+        message: `${req.user.fullName || "Quản lý"} đã giao cho bạn công việc "${task.title}"`,
+        emailPayload: { taskTitle: task.title, actorName: req.user.fullName },
+      });
+    }
+
     await task.populate("assigneeIds", "fullName email avatarUrl");
     await task.populate("primaryAssigneeId", "fullName email avatarUrl");
 
@@ -119,7 +131,7 @@ exports.assignUsers = async (req, res, next) => {
   }
 };
 
-// PATCH /api/tasks/:id/assignees/:userId (Đặt làm người phụ trách chính)
+// PATCH /api/tasks/:id/assignees/:userId
 exports.updatePrimaryAssignee = async (req, res, next) => {
   try {
     const { id, userId } = req.params;
@@ -172,7 +184,7 @@ exports.updatePrimaryAssignee = async (req, res, next) => {
   }
 };
 
-// DELETE /api/tasks/:id/assignees/:userId (Hủy giao việc cho một người)
+// DELETE /api/tasks/:id/assignees/:userId
 exports.removeAssignee = async (req, res, next) => {
   try {
     const { id, userId } = req.params;
