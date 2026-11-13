@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -10,53 +10,55 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health Check Endpoint
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   const dbState = mongoose.connection.readyState;
   const states = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting',
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
   };
 
   res.status(200).json({
-    status: 'success',
-    message: 'Task Manager API is running',
+    status: "success",
+    message: "Task Manager API is running",
     timestamp: new Date().toISOString(),
     database: {
-      status: states[dbState] || 'unknown',
+      status: states[dbState] || "unknown",
       connected: dbState === 1,
     },
   });
 });
 
 // API Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/tasks", require("./routes/taskRoutes"));
+app.use("/api/tasks", require("./routes/taskRoutes"));
 
 // Welcome Route
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    name: 'Task Manager API',
-    version: '1.0.0',
-    documentation: '/api/health',
+    name: "Task Manager API",
+    version: "1.0.0",
+    documentation: "/api/health",
   });
 });
 
 // Handle 404 - Not Found
 app.use((req, res, next) => {
   res.status(404).json({
-    status: 'error',
+    status: "error",
     message: `Không tìm thấy endpoint: ${req.method} ${req.originalUrl}`,
   });
 });
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error(' [Unhandled Error]:', err.stack || err.message);
+  console.error(" [Unhandled Error]:", err.stack || err.message);
   res.status(err.status || 500).json({
-    status: 'error',
-    message: err.message || 'Lỗi máy chủ nội bộ',
+    status: "error",
+    message: err.message || "Lỗi máy chủ nội bộ",
   });
 });
 
