@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../models/task.dart';
+import '../../services/collab_service.dart';
 import '../../services/task_service.dart';
 import '../../widgets/loading_view.dart';
 import '../../widgets/task_widgets.dart';
@@ -23,6 +24,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   int _total = 0;
   bool _isLoading = true;
   String? _error;
+  int _unread = 0;
 
   String _role = 'all';
   String? _status;
@@ -47,6 +49,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   void initState() {
     super.initState();
     _load();
+    _loadUnread();
   }
 
   @override
@@ -88,6 +91,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
     }
   }
 
+  Future<void> _loadUnread() async {
+    try {
+      final n = await CollabService().unreadCount();
+      if (!mounted) return;
+      setState(() => _unread = n);
+    } catch (_) {}
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.pushNamed(context, '/notifications');
+    _loadUnread();
+  }
+
   void _onSearchChanged(String _) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), _load);
@@ -107,6 +123,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
       MaterialPageRoute(builder: (_) => TaskDetailScreen(taskId: task.id)),
     );
     if (changed == true) _load(showSpinner: false);
+    _loadUnread();
   }
 
   Widget _buildFilters() {
@@ -288,6 +305,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
         title: Text(_isLoading ? 'Công việc' : 'Công việc ($_total)'),
         actions: [
           IconButton(
+            tooltip: 'Thông báo',
+            icon: Badge(
+              isLabelVisible: _unread > 0,
+              label: Text(_unread > 99 ? '99+' : '$_unread'),
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            onPressed: _openNotifications,
+          ),
+          IconButton(
             tooltip: 'Hồ sơ cá nhân',
             icon: const Icon(Icons.account_circle_outlined),
             onPressed: () => Navigator.pushNamed(context, '/profile'),
@@ -299,7 +325,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
           _buildFilters(),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () => _load(showSpinner: false),
+              onRefresh: () {
+                _loadUnread();
+                return _load(showSpinner: false);
+              },
               child: _buildBody(),
             ),
           ),
