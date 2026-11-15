@@ -56,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
 
-      Navigator.pushNamedAndRemoveUntil(context, '/profile', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/tasks', (route) => false);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
