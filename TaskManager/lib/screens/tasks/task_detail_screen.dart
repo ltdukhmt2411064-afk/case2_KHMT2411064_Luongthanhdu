@@ -4,7 +4,10 @@ import '../../services/task_service.dart';
 import '../../utils/date_formatter.dart';
 import '../../widgets/loading_view.dart';
 import '../../widgets/task_widgets.dart';
+import 'task_assign_screen.dart';
+import 'task_email_logs_screen.dart';
 import 'task_form_screen.dart';
+import 'task_share_screen.dart';
 
 // Khi quay lại sẽ pop(true) nếu công việc có thay đổi/bị xóa, để danh sách tải lại.
 class TaskDetailScreen extends StatefulWidget {
@@ -78,6 +81,42 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       _changed = true;
       _load();
     }
+  }
+
+  Future<void> _openAssign() async {
+    final task = _task;
+    if (task == null) return;
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TaskAssignScreen(taskId: task.id, canManage: task.canDelete),
+      ),
+    );
+    if (changed == true) {
+      _changed = true;
+      _load();
+    }
+  }
+
+  Future<void> _openShare() async {
+    final task = _task;
+    if (task == null) return;
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TaskShareScreen(taskId: task.id, canManage: task.canDelete),
+      ),
+    );
+    _load();
+  }
+
+  Future<void> _openEmailLogs() async {
+    final task = _task;
+    if (task == null) return;
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => TaskEmailLogsScreen(taskId: task.id)),
+    );
   }
 
   Future<void> _delete() async {
@@ -220,6 +259,31 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 color: task.description.isEmpty ? Colors.grey : null,
                 height: 1.4,
               ),
+            ),
+            const SizedBox(height: 20),
+            const Text('Cộng tác', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _openAssign,
+                  icon: const Icon(Icons.person_add_alt_1_outlined),
+                  label: const Text('Người được giao'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _openShare,
+                  icon: const Icon(Icons.share_outlined),
+                  label: const Text('Chia sẻ'),
+                ),
+                if (task.canDelete)
+                  OutlinedButton.icon(
+                    onPressed: _openEmailLogs,
+                    icon: const Icon(Icons.mail_outline),
+                    label: const Text('Lịch sử email'),
+                  ),
+              ],
             ),
             if (task.canChangeStatus) ...[
               const SizedBox(height: 20),
