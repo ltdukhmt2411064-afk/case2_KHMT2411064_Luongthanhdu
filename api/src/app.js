@@ -35,10 +35,17 @@ app.get("/api/health", (req, res) => {
 // API Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/tasks", require("./middleware/activityTracker")); // ghi lịch sử hoạt động
 app.use("/api/tasks", require("./routes/taskRoutes"));
 app.use("/api/tasks/:id/assignees", require("./routes/assignmentRoutes"));
 app.use("/api/tasks/:id/shares", require("./routes/taskShareRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/statistics", require("./routes/statisticsRoutes"));
+app.get(
+  "/api/tasks/:id/activities",
+  authMiddleware,
+  require("./controllers/activityController").getTaskActivities,
+);
 app.get(
   "/api/tasks/:id/email-logs",
   authMiddleware,

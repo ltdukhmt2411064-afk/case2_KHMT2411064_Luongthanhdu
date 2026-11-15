@@ -4,6 +4,7 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/notifications/notification_center_screen.dart';
 import 'screens/profile/profile_screen.dart';
+import 'screens/statistics/statistics_dashboard_screen.dart';
 import 'services/auth_service.dart';
 import 'widgets/loading_view.dart';
 
@@ -36,6 +37,7 @@ class TaskManagerApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/notifications': (context) => const NotificationCenterScreen(),
+        '/statistics': (context) => const StatisticsDashboardScreen(),
       },
     );
   }
