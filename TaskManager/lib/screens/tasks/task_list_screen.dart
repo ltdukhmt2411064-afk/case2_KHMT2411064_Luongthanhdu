@@ -305,6 +305,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
         title: Text(_isLoading ? 'Công việc' : 'Công việc ($_total)'),
         actions: [
           IconButton(
+            tooltip: 'Thống kê',
+            icon: const Icon(Icons.bar_chart_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/statistics'),
+          ),
+          IconButton(
             tooltip: 'Thông báo',
             icon: Badge(
               isLabelVisible: _unread > 0,

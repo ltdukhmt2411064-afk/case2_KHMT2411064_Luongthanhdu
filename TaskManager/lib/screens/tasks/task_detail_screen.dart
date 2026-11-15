@@ -4,6 +4,7 @@ import '../../services/task_service.dart';
 import '../../utils/date_formatter.dart';
 import '../../widgets/loading_view.dart';
 import '../../widgets/task_widgets.dart';
+import 'task_activity_screen.dart';
 import 'task_assign_screen.dart';
 import 'task_email_logs_screen.dart';
 import 'task_form_screen.dart';
@@ -116,6 +117,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => TaskEmailLogsScreen(taskId: task.id)),
+    );
+  }
+
+  Future<void> _openActivities() async {
+    final task = _task;
+    if (task == null) return;
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => TaskActivityScreen(taskId: task.id)),
     );
   }
 
@@ -276,6 +286,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   onPressed: _openShare,
                   icon: const Icon(Icons.share_outlined),
                   label: const Text('Chia sẻ'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _openActivities,
+                  icon: const Icon(Icons.history),
+                  label: const Text('Lịch sử hoạt động'),
                 ),
                 if (task.canDelete)
                   OutlinedButton.icon(
